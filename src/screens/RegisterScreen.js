@@ -21,7 +21,7 @@ const RegisterScreen = ({ navigation }) => {
         <TextInput
           style={styles.input}
           value={name}
-          placeholder="Enter name"
+          placeholder="Enter Name"
           onChangeText={text => setName(text)}
         />
 

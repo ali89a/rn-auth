@@ -6,13 +6,17 @@ import {BASE_URL} from '../config';
 export const AuthContext = createContext();
 export const AuthProvider = ({children}) => {
   const register = (name, email, password) => {
-    axios.post(`${BASE_URL}/register`, {
+    console.log(name);
+    console.log(email);
+    console.log(password);
+    axios
+      .post(`${BASE_URL}/register`, {
       name,
       email,
       password,
-    })
-      .then(response => {
-        console.log(response);
+    }).then(response => {
+      let userInfo = response.data;
+      console.log(userInfo);
       })
       .catch(e => {
         console.log(`Register Api Error ${e}`);
@@ -20,6 +24,8 @@ export const AuthProvider = ({children}) => {
       });
   };
   const login = (email, password) => {
+    console.log(email);
+    console.log(password);
     axios
       .post(`${BASE_URL}/login`, {
         email,
