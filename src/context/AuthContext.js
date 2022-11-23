@@ -1,50 +1,82 @@
-import React, { createContext } from "react";
+import React, { createContext, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import {BASE_URL} from '../config';
+import { BASE_URL } from "../config";
 
 
 export const AuthContext = createContext();
-export const AuthProvider = ({children}) => {
+export const AuthProvider = ({ children }) => {
+  const [userInfo, setUserInfo] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const register = (name, email, password) => {
-    console.log(name);
-    console.log(email);
-    console.log(password);
+    setIsLoading(true);
     axios
       .post(`${BASE_URL}/register`, {
-      name,
-      email,
-      password,
-    }).then(response => {
-      let userInfo = response.data;
+        name,
+        email,
+        password,
+      }).then(response => {
+      let userInfo = response.data.data;
+      setUserInfo(userInfo);
+      AsyncStorage.setItem("userInfo", JSON.stringify(userInfo));
+      setIsLoading(false);
       console.log(userInfo);
-      })
+    })
       .catch(e => {
+        setIsLoading(false);
         console.log(`Register Api Error ${e}`);
 
       });
   };
   const login = (email, password) => {
-    console.log(email);
-    console.log(password);
+    setIsLoading(true);
     axios
       .post(`${BASE_URL}/login`, {
         email,
-        password
+        password,
       })
       .then(res => {
-        let userInfo = res.data;
+        let userInfo = res.data.data;
         console.log(userInfo);
-
+        setUserInfo(userInfo);
+        AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+        setIsLoading(false);
       })
       .catch(e => {
-        console.log(`login Api error ${e}`);
+        console.log(`login error ${e}`);
+        setIsLoading(false);
+      });
+  };
+  const logout = () => {
+    setIsLoading(true);
 
+    axios
+      .post(
+        `${BASE_URL}/logout`,
+        {},
+        {
+          headers: {Authorization: `Bearer ${userInfo.access_token}`},
+        },
+      )
+      .then(res => {
+        console.log(res.data);
+        AsyncStorage.removeItem('userInfo');
+        setUserInfo({});
+        setIsLoading(false);
+      })
+      .catch(e => {
+        console.log(`logout error ${e}`);
+        setIsLoading(false);
       });
   };
   return (
     <AuthContext.Provider
       value={{
-        register,login
+        register,
+        login,
+        isLoading,
+        userInfo,
+        logout
       }}>
       {children}
     </AuthContext.Provider>
