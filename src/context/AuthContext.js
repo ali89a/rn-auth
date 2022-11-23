@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { BASE_URL } from "../config";
@@ -8,6 +8,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [userInfo, setUserInfo] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [splashLoading, setSplashLoading] = useState(false);
   const register = (name, email, password) => {
     setIsLoading(true);
     axios
@@ -39,7 +40,7 @@ export const AuthProvider = ({ children }) => {
         let userInfo = res.data.data;
         console.log(userInfo);
         setUserInfo(userInfo);
-        AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+        AsyncStorage.setItem("userInfo", JSON.stringify(userInfo));
         setIsLoading(false);
       })
       .catch(e => {
@@ -55,12 +56,12 @@ export const AuthProvider = ({ children }) => {
         `${BASE_URL}/logout`,
         {},
         {
-          headers: {Authorization: `Bearer ${userInfo.access_token}`},
+          headers: { Authorization: `Bearer ${userInfo.access_token}` },
         },
       )
       .then(res => {
         console.log(res.data);
-        AsyncStorage.removeItem('userInfo');
+        AsyncStorage.removeItem("userInfo");
         setUserInfo({});
         setIsLoading(false);
       })
@@ -69,6 +70,27 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(false);
       });
   };
+  const isLoggedIn = async () => {
+    try {
+      setSplashLoading(true);
+
+      let userInfo = await AsyncStorage.getItem("userInfo");
+      userInfo = JSON.parse(userInfo);
+
+      if (userInfo) {
+        setUserInfo(userInfo);
+      }
+
+      setSplashLoading(false);
+    } catch (e) {
+      setSplashLoading(false);
+      console.log(`is logged in error ${e}`);
+    }
+  };
+
+  useEffect(() => {
+    isLoggedIn();
+  }, []);
   return (
     <AuthContext.Provider
       value={{
@@ -76,7 +98,8 @@ export const AuthProvider = ({ children }) => {
         login,
         isLoading,
         userInfo,
-        logout
+        logout,
+        splashLoading,
       }}>
       {children}
     </AuthContext.Provider>
