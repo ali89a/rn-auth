@@ -5,25 +5,35 @@ import HomeScreen from "../screens/HomeScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import { AuthContext } from "../context/AuthContext";
+import SplashScreen from '../screens/SplashScreen';
 
 const Stack = createNativeStackNavigator();
 
 const Navigation = () => {
 
-  const { userInfo } = useContext(AuthContext);
+  const { userInfo, splashLoading } = useContext(AuthContext);
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {userInfo.access_token ?
-
-          <Stack.Screen name="Home" component={HomeScreen} />
-          : <>
-            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
-          </>
+        {
+          splashLoading ?
+            (
+              <Stack.Screen name="Splash Screen" component={SplashScreen} options={{ headerShown: false }} />
+            ) :
+          (
+            userInfo.access_token ?
+              (
+                <Stack.Screen name="Home" component={HomeScreen} />
+              )
+              :
+              (
+                <>
+                  <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+                  <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
+                </>
+              )
+          )
         }
-
-
       </Stack.Navigator>
     </NavigationContainer>
   );
